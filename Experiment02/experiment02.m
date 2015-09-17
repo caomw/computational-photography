@@ -1,3 +1,4 @@
+% Mike Bartoli 
 %% Clean up
 % open "extra" windows.
 clear all
@@ -28,18 +29,28 @@ for file = files'
     R = I .* R_mask;
     G = I .* G_mask;
     B = I .* B_mask;
+    K = cat(3, R, G, B);
 
     % Demosaic using nearest-neighbor algorithms
-    R = R + circshift(R, [0,1]);
-    R = R + circshift(R, [1,0]);
-    B = B + circshift(B, [0,1]);
-    B = B + circshift(B, [1,0]);
-    G = G + circshift(G, [0,1]);
-    J = cat(3, R, G, B);
+    %R = R + circshift(R, [0,1]);
+    %R = R + circshift(R, [1,0]);
+    %B = B + circshift(B, [0,1]);
+    %B = B + circshift(B, [1,0]);
+    %G = G + circshift(G, [0,1]);
+    %J = cat(3, R, G, B);
     
     % Demosaic using bilinear interpolation
+    G = G + imfilter(G,[0 1 0; 1 0 1; 0 1 0]/4);
+    Bmr = imfilter(B,[1 0 1; 0 0 0; 1 0 1]/4);
+    B = B + Bmr + imfilter(B+Bmr,[0 1 0; 1 0 1; 0 1 0]/4);
+    Rmb = imfilter(R,[1 0 1; 0 0 0; 1 0 1]/4);
+    R = R + Rmb + imfilter(R+Rmb,[0 1 0; 1 0 1; 0 1 0]/4);
     
-
+    J = cat(3, R, G, B);
+    
+    figure
+    imshow(J)
+    
     % Write image as a color tif
     imwrite(J, [output_dir file_name(1:end-3) output_file_ext]);
 end
